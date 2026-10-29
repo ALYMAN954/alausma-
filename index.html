@@ -50,7 +50,8 @@ button:active{transform:translateY(3px);box-shadow:none}
 @keyframes sp{50%{transform:rotate(8deg) scale(1.12)}}
 .wb h3{margin:6px 0;font-size:30px;font-weight:900;color:#ff5a8a}
 .wb p{margin:4px 0 14px;font-weight:700;font-size:18px}
-@media print{#cf,#t{display:none}}
+.snd{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:12px;z-index:40;display:flex;gap:8px;align-items:center;background:#fff;border:3px solid #7c5cff;border-radius:30px;padding:6px 10px;box-shadow:0 4px 0 rgba(124,92,255,.25)}.snd button{padding:6px 14px;font-size:15px}.snd input{width:80px;padding:0;border:0;border-radius:0;background:none;accent-color:#7c5cff}.snd label{cursor:pointer;font-size:22px}
+@media print{#cf,#t,.snd{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -69,6 +70,8 @@ button:active{transform:translateY(3px);box-shadow:none}
 <div class="hint" id="hint"></div>
 <main class="grid" id="g"></main>
 <canvas id="cf"></canvas>
+<div class="snd"><button onclick="toggleQ()" id="qb" aria-label="صوت القرآن">🔈 قرآن</button><input type="range" id="qv" min="0" max="1" step="0.05" value="0.4" aria-label="مستوى الصوت"><label title="اختر ملف صوت من جهازك">📂<input type="file" id="qf" accept="audio/*" hidden></label></div>
+<audio id="qa" loop preload="none"></audio>
 <div id="t"></div>
 <div id="win"><div class="wb"><div class="tr">🏆</div><h3 id="wn"></h3><p>جمع ١٠ أوسمة وفاز بالمسابقة! 🎉<br>بارك الله فيه وزاده من الأخلاق الحسنة</p><button onclick="closeWin()">🌟 رائع!</button></div></div>
 <script>
@@ -133,6 +136,12 @@ var cv=document.getElementById("cf"),cx=cv.getContext("2d"),P=[],run=false,C=["#
 function sz(){cv.width=innerWidth;cv.height=innerHeight}sz();addEventListener("resize",sz);
 function burst(x,y,n){for(var i=0;i<n;i++){var a=Math.random()*6.28,s=3+Math.random()*7;P.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-4,c:C[i%6],r:4+Math.random()*5,l:70+Math.random()*40,e:Math.random()<.3?"⭐":""})}if(!run){run=true;loop()}}
 function loop(){cx.clearRect(0,0,cv.width,cv.height);P=P.filter(function(p){return p.l>0});P.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.vx*=.99;p.l--;cx.globalAlpha=Math.min(1,p.l/30);if(p.e){cx.font="18px sans-serif";cx.fillText(p.e,p.x,p.y)}else{cx.fillStyle=p.c;cx.fillRect(p.x,p.y,p.r,p.r*1.6)}});cx.globalAlpha=1;if(P.length)requestAnimationFrame(loop);else run=false}
+var QURL="quran.mp3",qa=document.getElementById("qa"),qb=document.getElementById("qb");
+qa.src=QURL;qa.volume=.4;
+function qset(){qb.textContent=qa.paused?"🔈 قرآن":"🔊 قرآن"}
+function toggleQ(){if(qa.paused){qa.play().then(qset).catch(function(){toast("ضع ملف quran.mp3 بجانب الصفحة أو اختر ملفًا من 📂")})}else{qa.pause();qset()}}
+document.getElementById("qv").oninput=function(e){qa.volume=e.target.value};
+document.getElementById("qf").onchange=function(e){var f=e.target.files[0];if(f){qa.src=URL.createObjectURL(f);qa.play().then(qset).catch(function(){});toast("تم اختيار الصوت 🎧")}};
 render();
 </script>
 </body>
